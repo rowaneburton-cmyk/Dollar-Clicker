@@ -253,3 +253,24 @@ body.nbv{grid-template-columns:minmax(300px,1fr) minmax(330px,1.3fr)}body.nbv #v
 #dvb,#dvi{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
 #dvb button,#dvi button,#dvi input{font:inherit;font-size:8px;color:var(--txt);background:var(--p2);border:3px solid var(--edge);padding:7px 8px;cursor:pointer}
 #dvb button:hover,#dvi button:hover{background:var(--hi)}#dvi input{background:var(--edge);cursor:text;width:160px;-webkit-user-select:text;user-select:text}
+/* ===== v5 (append to END of style.css) ===== */
+html,html *{cursor:var(--cur,auto)!important}
+html input,html textarea{cursor:text!important}
+#lts{overflow:hidden;position:relative;touch-action:none;--px:0;--py:0;
+background:
+radial-gradient(circle at calc(30% + var(--px)*.03px) calc(35% + var(--py)*.03px),rgba(120,50,190,.45),transparent 38%),
+radial-gradient(circle at calc(75% + var(--px)*.05px) calc(70% + var(--py)*.05px),rgba(40,110,200,.4),transparent 40%),
+radial-gradient(#fff 1px,transparent 1.5px) calc(var(--px)*.15px) calc(var(--py)*.15px)/53px 53px,
+radial-gradient(#9bd1ff 1.5px,transparent 2px) calc(var(--px)*.35px) calc(var(--py)*.35px)/97px 97px,
+radial-gradient(#ffd84a 2px,transparent 2.5px) calc(var(--px)*.6px) calc(var(--py)*.6px)/151px 151px,#05030d}
+#lts::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(3,1,10,.9) 100%)}
+#ltm{position:absolute;left:0;top:0;width:1600px;height:1600px;background:none;will-change:transform}
+#ltv{filter:drop-shadow(0 0 5px #ffd84a);pointer-events:none}
+.nd{border-radius:50%}
+.nd.rv{animation:rv .6s steps(6)}
+@keyframes rv{from{transform:scale(0);opacity:0}}
+#lasc{display:block;width:100%;margin:0 0 8px;font:inherit;font-size:9px;color:#fff;background:#6a3a8a;border:4px solid var(--edge);padding:8px;cursor:pointer}
+#lasc:hover{filter:brightness(1.2)}
+#gv{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:40;display:none;align-items:center;justify-content:center}
+.bx.wide{width:min(760px,96vw)}
+#gv canvas{display:block;width:100%;background:var(--edge);border:3px solid var(--hi);margin-bottom:8px}

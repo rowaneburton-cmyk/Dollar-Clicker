@@ -139,7 +139,7 @@ function toast(m,d){toastEl.textContent=m;toastEl.classList.add('on');clearTimeo
 const enc=()=>btoa(JSON.stringify({$,own,tot,tc,made,b:[...bought],n:encodeURIComponent(fname),a:[...ach],h:hc,g:gc,p:play,k:stk,x:sx,l:lvl,i:ing,r:ripe,hu:[...hu],hs:hcs,t:Date.now()}));
 function save(q){if(wiped)return;try{localStorage.setItem(KEY,enc());q||toast('Game saved!')}catch(e){q||toast('Save unavailable here - use EXPORT')}}
 function load(s,off){try{const d=JSON.parse(atob(s));$=d.$||0;tot=d.tot||0;tc=d.tc||0;own=B.map((_,i)=>d.own[i]||0);B.forEach((_,i)=>made[i]=d.made[i]||0);bought.clear();(d.b||[]).forEach(x=>bought.add(x));recalc();if(d.n){fname=decodeURIComponent(d.n);fnEl.textContent=fname}ach=new Set(d.a||[]);hc=d.h||0;gc=d.g||0;play=d.p||0;if(d.k&&d.k.sh)stk=d.k;if(d.x)Object.assign(sx,d.x);lvl=B.map((_,i)=>(d.l&&d.l[i])||0);ing=d.i||0;hu=new Set(d.hu||[]);hcs=d.hs||0;hrecalc();ripe=d.r||Date.now()+3e5;
-const g=dps()*Math.min((Date.now()-d.t)/1000,28800);if(off&&g>1){$+=g;tot+=g;toast('Welcome back! +$'+f(g)+' while away')}
+window.offSec=off?(Date.now()-d.t)/1000:0;
 uk='';started=false;upDraw();started=true;draw();return true}catch(e){return false}}
 const mn=document.createElement('div');mn.id='mn';mn.innerHTML='<textarea id="io" placeholder="Paste save code, then press IMPORT"></textarea><div><button>SAVE</button><button>EXPORT</button><button>IMPORT</button><button>WIPE</button><button id="mt"></button></div>';document.getElementById('l').appendChild(mn);
 const io=document.getElementById('io'),[b1,b2,b3,b4]=mn.querySelectorAll('button');
@@ -384,3 +384,194 @@ const [dvs,dvadd]=document.getElementById('dvi').querySelectorAll('button'),dva=
 dvs.onclick=()=>{const n=Number(dva.value);if(isFinite(n)){$=n;draw();toast('DEV: money set',1500)}};dvadd.onclick=()=>{const n=Number(dva.value);if(isFinite(n)){$+=n;draw();toast('DEV: money added',1500)}};
 dv.onclick=e=>{if(e.target==dv||e.target.classList.contains('xb'))dv.style.display='none'};
 function devOpen(){dv.style.display='flex';toast('DEV TOOLS unlocked',2000)}
+/* ===== v5 ADDITIONS (append to END of game.js) ===== */
+/* custom gold cursor with green $ (clearly unlike the white Cursor sprites) */
+(function(){const A=["k...........","kk..........","kyk.........","kyyk........","kyyyk.......","kyyyyk......","kyyyyyk.....","kyyyyyyk....","kyyyyyyyk...","kyyyyyykkk..","kyykyyk.....","kykkyyk.....","kk..kyyk....","....kyyk....",".....kk....."],
+D=["..G..",".GGGG","G.G..",".GGG.","..G.G","GGGG.","..G.."],c=document.createElement('canvas');c.width=32;c.height=30;const x=c.getContext('2d');
+A.forEach((r,j)=>[...r].forEach((p,i)=>{if(p=='.')return;x.fillStyle=p=='k'?'#12101c':r[i+1]=='k'?'#ff9a1f':'#ffd84a';x.fillRect(i*2,j*2,2,2)}));
+D.forEach((r,j)=>[...r].forEach((p,i)=>{if(p=='G'){x.fillStyle='#58d36f';x.fillRect(22+i*2,14+j*2,2,2)}}));
+document.documentElement.style.setProperty('--cur',`url(${c.toDataURL()}) 0 0, auto`)})();
+
+/* golden bills: money pops up exactly where you click (old code read the rect after removing the bill) */
+function golden(){if(document.querySelector('.gd:not(.sm)'))return;const g=document.createElement('div');g.className='gd';g.dataset.x=Date.now()+20000*H.gd;g.style.animationDuration=20*H.gd+'s';g.style.left=10+Math.random()*80+'vw';g.style.top=10+Math.random()*70+'vh';g.appendChild(bill());
+g.onclick=e=>{const x=e.clientX,y=e.clientY;g.remove();gc++;const q=Math.random();let m,a=0;
+if(q<.45){fz=Date.now()+77e3;m='FRENZY! Production x7 for 77s'}else if(q<.8){a=Math.min(dps()*900,$*.15)+13;$+=a;tot+=a;m='LUCKY! +$'+f(a)}else if(q<.92){cz=Date.now()+13e3;m='CLICK FRENZY! Clicks x777 for 13s'}else{storm();m='CASH STORM! Grab the bills!'}
+toast(m,6000);bigPop(m,x,y);if(a)bigPop('+$'+f(a),x,y+60);burst(x,y,24);fly(x,y,10);shk();sGold();draw()};
+document.body.appendChild(g);setTimeout(()=>g.remove(),20000*H.gd)}
+function storm(){for(let k=0;k<25;k++)setTimeout(()=>{const g=document.createElement('div');g.className='gd sm';g.dataset.x=Date.now()+7000;g.style.cssText=`left:${5+Math.random()*90}vw;top:${5+Math.random()*80}vh;animation-duration:7s`;g.appendChild(bill());
+g.onclick=e=>{const x=e.clientX,y=e.clientY;g.remove();const a=dps()*15+cm*cx()*30+10;$+=a;tot+=a;burst(x,y,10);fly(x,y,2);snd(900,.05,'triangle',.04,1.3);
+const t=document.createElement('div');t.className='f crit';t.textContent='+$'+f(a);t.style.cssText=`left:${x-20}px;top:${y-20}px;--dx:0px`;document.body.appendChild(t);setTimeout(()=>t.remove(),4000);draw()};
+document.body.appendChild(g);setTimeout(()=>g.remove(),7000)},k*180)}
+
+/* legacy stat defaults: crits/mega crits/offline now come from the tree */
+function hrecalc(){H={p:1,c:1,gf:1,gd:1,ig:1,dc:1,cr:0,cm:5,mg:0,mm:50,of:0,oh:2,ch:1,sm:0,sb:0,ov:1,sv:1,cp:1};hu.add('hub');HN.forEach(n=>hu.has(n.id)&&n.fx())}
+bt.onclick=e=>{let v=(cm*cx()+dps()*cpd)*(1+Math.min(cb,50)*.02);const kr=Math.random(),kc=kr<H.mg?H.mm:kr<H.mg+H.cr?H.cm:1;v*=kc;window.kcrit=kc;if(kc>10)sx.mg=(sx.mg||0)+1;$+=v;tot+=v;tc++;cb++;clearTimeout(ct);ct=setTimeout(()=>cb=0,900);sClick();pop(bt,'q');burst(e.clientX,e.clientY,cb%10?5:16);
+const t=document.createElement('div');t.className='f'+(kc>1?' crit':'');t.textContent=(kc>10?'MEGA CRIT! ':kc>1?'CRIT! ':'')+'+$'+f(v);t.style.cssText=`left:${e.clientX-10}px;top:${e.clientY-20}px;--dx:${Math.random()*60-30}px`;document.body.appendChild(t);setTimeout(()=>t.remove(),4000);draw()};
+
+/* ===== LEGACY TREE v2: 8 branches x 7, draggable galaxy, fog of war, rebirth button ===== */
+const BS=["Star","Pen","dollar","Crown","Trophy","Ingot","Space Corp","Employee"],
+HD2=[
+[["Pocket Dividend",1,'+10% production',()=>H.p*=1.1],["Compound Interest",3,'+15% production',()=>H.p*=1.15],["Economies of Scale",8,'+20% production',()=>H.p*=1.2],["Monopoly Powers",25,'+30% production',()=>H.p*=1.3],["Heavenly Dividend",80,'+50% production',()=>H.p*=1.5],["Cosmic Dividend",200,'+75% production',()=>H.p*=1.75],["Dollar Ascendant",500,'x2 production',()=>H.p*=2]],
+[["Tap Training",1,'+25% click power',()=>H.c*=1.25],["Lucky Fingers",3,'+25% click power',()=>H.c*=1.25],["Iron Wrist",8,'+50% click power',()=>H.c*=1.5],["Steady Aim",25,'+50% click power',()=>H.c*=1.5],["Divine Touch",80,'+100% click power',()=>H.c*=2],["Finger of God",200,'x2 click power',()=>H.c*=2],["Click Ascendant",500,'x3 click power',()=>H.c*=3]],
+[["Gilded Radar",1,'Golden bills appear 10% more often',()=>H.gf*=1.1],["Lingering Glow",3,'Golden bills last 25% longer',()=>H.gd*=1.25],["Heavenly Luck",8,'Golden bills appear 20% more often',()=>H.gf*=1.2],["Storm Chaser",25,'Golden bills last 50% longer',()=>H.gd*=1.5],["Midas Beacon",80,'Golden bills appear 30% more often',()=>H.gf*=1.3],["Golden Era",200,'Golden bills appear 40% more often',()=>H.gf*=1.4],["Heart of Gold",500,'Golden bills last twice as long',()=>H.gd*=2]],
+[["Legacy",1,'Start each run with $1,000',()=>H.sm+=1e3],["Seed Money",3,'Start each run with $1M more',()=>H.sm+=1e6],["Interns",8,'Start each run with 10 Cursors, Employees and Offices',()=>H.sb+=10],["Trust Fund",25,'Start each run with $1B more',()=>H.sm+=1e9],["Dynasty",80,'Start with 15 more Cursors, Employees and Offices',()=>H.sb+=15],["Venture Seed",200,'Start each run with $1T more',()=>H.sm+=1e12],["Old Money",500,'Start with 25 more Cursors, Employees and Offices',()=>H.sb+=25]],
+[["Bulk Discount",1,'Buildings cost 3% less',()=>H.dc*=.97],["Fertile Vault",3,'Ingots ripen 25% faster',()=>H.ig*=1.25],["Angel Investors",8,'+20% chips from rebirth',()=>H.ch*=1.2],["Wholesale",25,'Buildings cost 5% less',()=>H.dc*=.95],["Chip Magnet",80,'+30% chips from rebirth',()=>H.ch*=1.3],["Chip Vacuum",200,'+40% chips from rebirth',()=>H.ch*=1.4],["Bargain Empire",500,'Buildings cost 8% less',()=>H.dc*=.92]],
+[["Better Rates",1,'Savings earn 50% more interest',()=>H.sv*=1.5],["Cheaper Press",3,'Coin press costs 30% less',()=>H.cp*=.7],["Turbo Clock",8,'Overclock lasts 50% longer',()=>H.ov*=1.5],["Premium Account",25,'Savings earn double interest',()=>H.sv*=2],["Perpetual Motion",80,'Overclock lasts twice as long',()=>H.ov*=2],["Gold Standard",200,'Savings earn double interest again',()=>H.sv*=2],["Time Dilation",500,'Coin press costs 40% less',()=>H.cp*=.6]],
+[["Critical Hits",1,'Unlock crits: 5% chance for x5 clicks',()=>H.cr+=.05],["Sharper Edge",3,'+3% crit chance',()=>H.cr+=.03],["Brutal Strikes",8,'Crits hit x7 instead of x5',()=>H.cm+=2],["Mega Crits",25,'Unlock MEGA crits: 0.5% chance for x50 clicks',()=>H.mg+=.005],["Mega Odds",60,'+0.5% mega crit chance',()=>H.mg+=.005],["Mega Power",150,'Mega crits hit x100 instead of x50',()=>H.mm+=50],["Crit God",400,'+5% crit chance, +1% mega chance, crits x10',()=>{H.cr+=.05;H.mg+=.01;H.cm+=3}]],
+[["Night Shift",1,'Employees earn 10% while you are away (up to 2h)',()=>H.of+=.1],["Overtime Pay",3,'+10% offline earnings',()=>H.of+=.1],["Long Hours",8,'Offline cap +4h',()=>H.oh+=4],["Remote Work",25,'+20% offline earnings',()=>H.of+=.2],["Weekend Shift",60,'Offline cap +6h',()=>H.oh+=6],["Global Offices",150,'+30% offline earnings',()=>H.of+=.3],["24/7 Operations",400,'+20% offline earnings, cap +12h',()=>{H.of+=.2;H.oh+=12}]]];
+HN.length=0;
+HN.push({id:'hub',n:'Dollar Legacy',c:0,d:'The heart of your legacy. Each chip gives +2% production. Only upgrades next to ones you own are visible.',x:800,y:800,p:null,sp:'Mint',fx:()=>{}});
+HD2.forEach((br,b)=>br.forEach((n,k)=>{const a=b*Math.PI/4-Math.PI/2,r=110+k*95,o=k%2?18:-18;HN.push({id:'h'+b+k,n:n[0],c:n[1],d:n[2],fx:n[3],x:800+Math.cos(a)*r-Math.sin(a)*o,y:800+Math.sin(a)*r+Math.cos(a)*o,p:k?'h'+b+(k-1):'hub',sp:BS[b]})}));
+document.getElementById('hl').remove();
+const nhl=document.createElement('div');nhl.id='hl';nhl.innerHTML='<div class="bx hx"><button class="xb">X</button><h3>LEGACY TREE</h3><div id="ltc"></div><button id="lasc"></button><div class="hint">Drag to explore the galaxy. Only upgrades next to ones you own are visible.</div><div id="lts"><div id="ltm"><svg id="ltv" width="1600" height="1600"></svg></div></div></div>';document.body.appendChild(nhl);
+const lts2=document.getElementById('lts'),ltm2=document.getElementById('ltm'),lsv=document.getElementById('ltv'),lasc=document.getElementById('lasc');
+let pnx=0,pny=0,drg=null,mvd=0;
+function pan(x,y){pnx=Math.min(0,Math.max(lts2.clientWidth-1600,x));pny=Math.min(0,Math.max(lts2.clientHeight-1600,y));ltm2.style.transform=`translate(${pnx}px,${pny}px)`;lts2.style.setProperty('--px',pnx);lts2.style.setProperty('--py',pny)}
+lts2.onpointerdown=e=>{drg={x:e.clientX-pnx,y:e.clientY-pny,sx:e.clientX,sy:e.clientY};mvd=0};
+addEventListener('pointermove',e=>{if(!drg)return;if(Math.abs(e.clientX-drg.sx)+Math.abs(e.clientY-drg.sy)>5)mvd=1;pan(e.clientX-drg.x,e.clientY-drg.y)});
+addEventListener('pointerup',()=>drg=null);
+HN.forEach(n=>{const d=document.createElement('div');d.className='nd';d.style.left=n.x+'px';d.style.top=n.y+'px';d.appendChild(spr(n.sp,'100%'));n.e=d;
+d.onmouseenter=()=>{window.tipLock=1;tip.innerHTML=`<h3>${n.n}</h3><div>${n.d}</div><hr><div>${hu.has(n.id)?'<span class="ok">Owned</span>':'Cost: <span class="'+bad(n.c)+'">'+n.c+' chips</span>'}</div>`;place(d)};
+d.onmouseleave=()=>{window.tipLock=0;tip.style.display='none'};d.onclick=e=>{if(!mvd)tBuy(n,e)};ltm2.appendChild(d)});
+function tDraw(){document.getElementById('ltc').innerHTML=`Chips available: <b class="up">${hc-hcs}</b> | Prestige level ${hc} (+${hc*2}% production)`;lasc.textContent=sure?'SURE? CLICK AGAIN TO REBIRTH':'REBIRTH: +'+potn()+' CHIPS (resets your run)';
+const vis=n=>hu.has(n.id)||!n.p||hu.has(n.p);let s='';
+HN.forEach(n=>{const v=vis(n),ow=hu.has(n.id),p=n.p&&HN.find(q=>q.id==n.p),av=!ow&&(!n.p||hu.has(n.p))&&hc-hcs>=n.c;if(v&&p)s+=`<line x1="${p.x}" y1="${p.y}" x2="${n.x}" y2="${n.y}" stroke="${ow?'#ffd84a':'#6a5aa0'}" stroke-width="4"/>`;
+n.e.style.display=v?'':'none';n.e.className='nd'+(ow?' ow':av?' av':'')+(v&&!n._s?' rv':'');n._s=v});lsv.innerHTML=s}
+function tBuy(n,e){if(hu.has(n.id))return;const no=()=>snd(110,.15,'sawtooth',.04,.7);if(hc-hcs<n.c){toast('Need '+n.c+' chips (you have '+(hc-hcs)+')',2500);return no()}
+hcs+=n.c;hu.add(n.id);hrecalc();burst(e.clientX,e.clientY,40);rip(e.clientX,e.clientY);sUp();toast('Legacy upgrade: '+n.n+' - '+n.d,4000);tDraw();draw();save(1)}
+lasc.onclick=()=>{ascend();tDraw()};
+nhl.onclick=e=>{if(e.target==nhl||e.target.classList.contains('xb'))nhl.style.display='none'};
+lb4.onclick=()=>{nhl.style.display='flex';tDraw();pan(lts2.clientWidth/2-800,lts2.clientHeight/2-800)};
+setInterval(()=>{if(nhl.style.display=='flex')tDraw()},500);
+hrecalc();
+/* offline earnings now come from the tree (needs the 1-line edit in load()) */
+if(window.offSec>1){const g=dps()*Math.min(offSec,H.oh*3600)*H.of;if(g>1){$+=g;tot+=g;toast('Employees earned $'+f(g)+' while you were away ('+Math.round(H.of*100)+'%, up to '+H.oh+'h)',6000)}}
+
+/* ===== GRAPHS ===== */
+const GH=[];setInterval(()=>{GH.push({d:dps(),e:tot,c:$,k:tc});if(GH.length>400)GH.shift()},2000);
+function lineC(id,t,arr,col,lg){const c=document.getElementById(id),x=c.getContext('2d'),W=c.width,h=c.height,L=52,Bt=16,T=16;x.clearRect(0,0,W,h);x.font='9px monospace';x.fillStyle='#ffd84a';x.fillText(t,6,10);
+if(arr.length<2){x.fillStyle='#8e86b5';x.fillText('Collecting data... keep playing',L,h/2);return}
+const g=v=>lg?Math.log10(Math.max(v,1)):v,vs=arr.map(g);let mn=lg?Math.min(...vs):0,mx=Math.max(...vs);if(mx<=mn)mx=mn+1;
+const X=i=>L+(W-L-6)*i/(arr.length-1),Y=v=>h-Bt-(h-Bt-T)*(v-mn)/(mx-mn);
+x.strokeStyle='#2a2640';x.fillStyle='#8e86b5';for(let k=0;k<=4;k++){const v=mn+(mx-mn)*k/4,y=Y(v);x.beginPath();x.moveTo(L,y);x.lineTo(W,y);x.stroke();x.fillText(f(lg?10**v:v),2,y+3)}
+x.beginPath();vs.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.strokeStyle=col;x.lineWidth=2;x.stroke();x.lineTo(X(vs.length-1),h-Bt);x.lineTo(L,h-Bt);x.globalAlpha=.18;x.fillStyle=col;x.fill();x.globalAlpha=1;x.lineWidth=1;x.fillStyle='#8e86b5';x.fillText('-'+fmtT((arr.length-1)*2),L,h-3);x.fillText('now',W-24,h-3)}
+function barC(id,t,lab,val,lg,pc){const c=document.getElementById(id),h=24+Math.max(lab.length,1)*15;c.height=h;const x=c.getContext('2d'),W=c.width;x.clearRect(0,0,W,h);x.font='9px monospace';x.fillStyle='#ffd84a';x.fillText(t,6,11);
+if(!lab.length){x.fillStyle='#8e86b5';x.fillText('Nothing yet',6,34);return}
+const g=v=>lg?Math.log10(v+1):v,mx=Math.max(...val.map(g))||1;
+lab.forEach((l,i)=>{const y=20+i*15,w=(W-260)*g(val[i])/mx;x.fillStyle='#8e86b5';x.fillText(l.slice(0,18),6,y+10);x.fillStyle=`hsl(${i*37%360},65%,55%)`;x.fillRect(130,y,Math.max(1,w),11);x.fillStyle='#efe9ff';x.fillText(f(val[i])+(pc?' ('+(pc[i]*100).toFixed(1)+'%)':''),136+w,y+10)})}
+const gv=document.createElement('div');gv.id='gv';gv.innerHTML='<div class="bx wide"><button class="xb">X</button><h3>ECONOMY GRAPHS (history resets on reload)</h3>'+[1,2,3,4,5,6,7,8,9].map(i=>`<canvas id="g${i}" width="700" height="150"></canvas>`).join('')+'</div>';document.body.appendChild(gv);
+gv.onclick=e=>{if(e.target==gv||e.target.classList.contains('xb'))gv.style.display='none'};
+function gDraw(){const sl=GH.slice(-300),D=dps(),ix=B.map((_,i)=>i).filter(i=>own[i]>0),im=B.map((_,i)=>i).filter(i=>made[i]>0),a=GH.slice(-15),cps=a.length>1?(a[a.length-1].k-a[0].k)/((a.length-1)*2):0;
+lineC('g1','MONEY PER SECOND (log scale)',sl.map(s=>s.d),'#7dff8f',1);
+lineC('g2','TOTAL EARNED THIS RUN (log scale)',sl.map(s=>s.e),'#ffd84a',1);
+lineC('g3','CASH ON HAND (log scale)',sl.map(s=>s.c),'#6bd6ff',1);
+lineC('g4','CLICKS PER SECOND',sl.map((s,i)=>i?Math.max(0,(s.k-sl[i-1].k)/2):0),'#ff8bd6',0);
+barC('g5','INCOME SHARE BY BUILDING ($/s)',ix.map(i=>B[i][0]),ix.map(i=>per(i)*own[i]),0,ix.map(i=>per(i)*own[i]/(D||1)));
+barC('g6','BUILDINGS OWNED',ix.map(i=>B[i][0]),ix.map(i=>own[i]),0);
+barC('g7','LIFETIME DOLLARS MADE BY BUILDING (log)',im.map(i=>B[i][0]),im.map(i=>made[i]),1);
+barC('g8','LUCK & MILESTONES (log bars)',['Crits','Mega crits','Golden bills','Ingots harvested','Coins pressed','Stock sales','Achievements','Upgrades bought','Chips earned','Total clicks'],[Math.max(0,sx.cr-(sx.mg||0)),sx.mg||0,gc,sx.hv,sx.cn,sx.sl,ach.size,bought.size,hc,tc],1);
+barC('g9','PASSIVE vs CLICK INCOME (log bars)',['Passive $/s','Click $/s (recent)','Clicks/s (recent)'],[D,cps*(cm*cx()+D*cpd),cps],1)}
+setInterval(()=>{if(gv.style.display=='flex')gDraw()},1000);
+const gb=document.createElement('button');gb.textContent='GRAPHS';lm.appendChild(gb);gb.onclick=()=>{gv.style.display='flex';gDraw()};
+
+/* ===== 100 MORE NEWS ===== */
+NW.push(...`Dollar bill declares independence from wallet
+Local man sells his clicking finger, regrets it, buys it back at a markup
+Cursor discovers it has been going in circles for hours, calls it cardio
+Mint accidentally prints a dollar that is also a sandwich
+Economists say the economy is "doing a thing"
+Employee asks for a raise, is given a higher chair
+Piggy bank files restraining order against hammer
+Quarterly report: numbers went up, everyone is very serious about it
+Wall Street trader buys low, sells lower, calls it strategy
+Tooth fairy opens branch office in your factory
+Coin collector finds coin that is, upon inspection, a button
+Bank launches loyalty program: loyal to money only
+Vending machine accepts only exact change and exact feelings
+Bill counter loses count, blames Mercury retrograde
+Local squirrel opens acorn hedge fund, outperforms the market
+Interns discover the supply closet, economy briefly collapses
+Factory mascot demands royalties
+Golden bill reportedly just passing through, please do not chase
+CEO motivational poster says Believe, poster unavailable for comment
+New fast food chain accepts only compliments, bankrupt within the hour
+Man builds sandcastle bank, tide forecloses
+Scientists teach pigeons to day trade, pigeons demand seed funding
+Skyscraper elevator has 400 floors and one button labeled Up, probably
+Tax auditor gets lost in your paperwork, found weeks later running a department
+Cursors request a hand-washing station, clicks now sanitized
+Man tries to pay with a coupon for a coupon
+Local genie grants three wishes, all of them are more dollars
+Stock ticker stuck on the word hmm
+Money tree found, turns out to be a regular tree with tape on it
+Dollar bill passes the vibe check
+Employee microwaves fish in the vault, vault evacuated
+Company retreat held inside a spreadsheet, nobody had a good time
+HR introduces casual Fridays, casual Mondays, and casual existential dread Wednesdays
+Pawn shop pawns itself
+Billionaire yacht needs a smaller yacht to park in
+Dollar sign tattoo parlor reports record business
+Mysterious briefcase found; contents are another briefcase
+Office plant achieves middle management
+Scientists measure the speed of money, it was just gone
+Local man claims he was this close to being rich, measures with a ruler
+Company mission statement now just says yes
+Moon Mine strikes cheese, writes it off as a business expense
+Mars Colony introduces weekend gravity
+Asteroid Belt prices rocks per pound, per feeling
+Dyson Sphere casts shadow on competitor, accused of light-handed tactics
+Time Machine returns with a receipt from next Tuesday
+Alien ambassador confused by tipping, tips his entire planet
+Black Hole ATM offers no fees, no returns, no light
+Parallel Universe you is nicer, richer, and has a dog
+Reality Printer prints a typo, gravity briefly optional
+Dollar Deity sends a thank-you card signed with a lightning bolt
+Infinity Press runs out of ink, universe delayed
+Singularity announces quarterly earnings: yes
+Galaxy Corp holds all-hands meeting, 400 billion attend, nobody can find parking
+Quantum Vault audit results: both fine and on fire
+Cosmic Exchange lists the Big Bang at a modest IPO
+Robot butler asks to invest its own savings, savings are your savings
+Local grandma beats the stock market with a jar of cookies
+Pocket calculator quits, says it cannot count this high
+Dollar bill folded into a swan, now a very expensive bird
+Intern files 10,000 expense reports about expense reports
+Office thermostat war enters its fourth quarter
+Man mistakes his 401k for a phone number
+Mega crit sighted: witnesses report a lot of dollars all at once
+Critical hit hotline overwhelmed with congratulatory calls
+Cursor union loses vote, accepts snacks
+Employee works the night shift, the day shift, and is somehow also the plant
+Vault door installed backwards; thieves lock themselves in
+Auditors find that miscellaneous is eating the budget
+Local man pays rent in compliments, landlord now emotionally wealthy
+Dollar bill appears in dream, wakes up with insomnia
+Accounting department switches to abacus for the aesthetics
+Free samples at the Mint are, unfortunately, not free
+Gold prices up; tooth fairy delighted
+Cashier receives a tip of good luck, hands over the whole drawer
+Rich uncle appears in the factory, leaves, returns, claims to be a different uncle
+Stock analyst predicts rain, sun, and a 30% chance of markets
+Penny saved is a penny earned, penny retires early
+Bank adds 17 new fees, one of them is for reading the fees
+Man falls asleep counting dollars, wakes up with a different number of dollars
+Mascot cursor demands bigger arrow, gets bigger arrow, still not enough
+Factory cafeteria serves soup of the day, soup of yesterday, soup of the economy
+Burglar breaks in, leaves a cash donation and a polite note
+New phone app tracks your money, it is just a picture of a dollar
+Dollar bills form a conga line across the vault
+Man opens an envelope, finds an envelope, repeats for days, becomes a courier
+Space Corp rocket delayed by a bird, probably
+Bank vault rated escape-proof, vault immediately escapes
+Spreadsheet gains sentience, immediately asks for a raise
+Local mayor offers key to the city, city offers to take it back
+Treasure hunters find chest of gold, chest of IOUs next to it
+Annual dollar parade features floats made entirely of dollars
+Economists agree: it is definitely a number
+Employee discovers the any key, becomes a legend
+Billboard reads Your ad here, nobody can afford it, it is your ad
+Ingot harvesters report a bumper crop, very shiny
+Shop clerk gives change in exact change, then more exact
+Dollar bill achieves personal best: crispiest ever
+Cosmic dice roll lands on invest
+Breaking: this is the 100th breaking news, and it is not very breaking`.split('\n').map(x=>()=>x));
